@@ -121,13 +121,14 @@ def make_move(player, dice_val):
         boundaries = inner_boundaries
 
     while move_count <= dice_val:
-        if if_stuck_and_not_killed_then_move(player, dice_val) is None:
+        next_move = if_stuck_and_not_killed_then_move(player, dice_val)
+        if next_move is None:
             break
-        elif if_stuck_and_not_killed_then_move(player, dice_val) == "exit":
+        elif next_move == "exit":
             return
-        elif if_stuck_and_not_killed_then_move(player, dice_val) == "continue":
+        elif next_move == "continue":
             continue
-        elif if_stuck_and_not_killed_then_move(player, dice_val) == "go":
+        elif next_move == "go":
             if new_col_pos == boundaries[0] \
                     and new_row_pos != boundaries[2]:
                 new_row_pos += 1
