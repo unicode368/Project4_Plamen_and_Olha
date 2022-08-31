@@ -22,17 +22,14 @@ def init_board():
 
 def init_players():
     global player1, player2, player3, player4
+    # ( init_pos , symbol , color , stop_position)
     player1.set_player((4, 2), Graphics.SUITS[0], Graphics.COLORS[0], (4, 1))
     player2.set_player((2, 4), Graphics.SUITS[1], Graphics.COLORS[1], (3, 4))
     player3.set_player((0, 2), Graphics.SUITS[2], Graphics.COLORS[2], (0, 3))
     player4.set_player((2, 0), Graphics.SUITS[3], Graphics.COLORS[3], (1, 0))
 
 
-def update_board():
-    pass
-
-
-def check_position(pos):
+def check_position(pos): # returns a list of players at the input pos
     global player1, player2, player3, player4
     res = []
     if pos in player1.coins.values():
@@ -49,7 +46,7 @@ def check_position(pos):
 def print_board():
     for i in range(5):
         for j in range(5):
-            curr_pos = check_position((i, j))
+            curr_pos = check_position((i, j)) # curr_pos is a list of existing players at (i,j)
             if curr_pos == []:
                 print("\033[90m", "\033[1m", Graphics.EMPTY_POS, end="\t")
             elif curr_pos[0][0] == "player1":
@@ -141,18 +138,20 @@ while not check_game_end_condition():
     print_board()
     print()
     dice = random.randint(1, 4)
-    print("Dice value: ", dice)
-    print(f"It's player{turn} move")
     if turn == 1:
+        print(f"Player{turn} {player1.coin_avatar} will advance next by {dice} moves.")
         make_move(player1, dice, turn)
     elif turn == 2:
+        print(f"Player{turn} {player2.coin_avatar} will advance next by {dice} moves.")
         make_move(player2, dice, turn)
     elif turn == 3:
+        print(f"Player{turn} {player3.coin_avatar} will advance next by {dice} moves.")
         make_move(player3, dice, turn)
     else:
+        print(f"Player{turn} {player4.coin_avatar} will advance next by {dice} moves.")
         make_move(player4, dice, turn)
     if turn == 4:
         turn = 1
     else:
         turn += 1
-    cont = input("Enter something to continue...")
+    cont = input("Continue...")
