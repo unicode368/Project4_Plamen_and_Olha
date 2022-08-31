@@ -154,7 +154,6 @@ def if_kills_then_execute(player, new_row_pos, new_col_pos):
     else:
         # if not the safe spot - refresh have_killed val and return killed coins to init_pos
         player.set_coins(player.curr_coin, (new_row_pos, new_col_pos))
-        player.set_have_killed()
         is_killed = False
         for player_in_the_spot in new_pos_player:
             print(player_in_the_spot)
@@ -165,6 +164,7 @@ def if_kills_then_execute(player, new_row_pos, new_col_pos):
                         is_killed = True
                         killed_player.coins[i] = killed_player.init_pos
         if is_killed:
+            player.set_have_killed()
             print("Someone gets killed!")
 
 
