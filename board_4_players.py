@@ -1,6 +1,7 @@
 from player import Player
 from graphics import Graphics
 import random
+
 board = []
 player1 = Player()
 player2 = Player()
@@ -14,6 +15,8 @@ new_row_pos = 0
 new_col_pos = 0
 move_count = 0
 inner_start_pos = {player1: (3, 1), player2: (3, 3), player3: (1, 3), player4: (1, 1)}
+winners = 0
+
 
 def init_board():
     global board
@@ -31,7 +34,6 @@ def init_players():
     player2.set_player((2, 4), Graphics.SUITS[1], Graphics.COLORS[1], (3, 4), (2, 3))
     player3.set_player((0, 2), Graphics.SUITS[2], Graphics.COLORS[2], (0, 3), (1, 2))
     player4.set_player((2, 0), Graphics.SUITS[3], Graphics.COLORS[3], (1, 0), (2, 1))
-
 
 
 def check_position(pos):  # returns a list of players at the input pos
@@ -86,7 +88,6 @@ def is_safe_pos(pos):
         return True
 
 
-
 def if_stuck_and_not_killed_then_move(player, dice_val):
     global move_count, new_row_pos, new_col_pos
     # print("move_count & dice_value are", move_count, dice_val)
@@ -131,16 +132,20 @@ def if_stuck_and_not_killed_then_move(player, dice_val):
         #     print("Stop spot")
         #     return None
         elif (new_row_pos, new_col_pos) == player.stop_position and \
-             move_count != dice_val and player.curr_coin == "c4":
+                move_count != dice_val and player.curr_coin == "c4":
             return "exit"
         else:
             return "go"
 
 
 def make_move(player, dice_val):
-    global move_count, new_row_pos, new_col_pos
+    global move_count, new_row_pos, new_col_pos, winners
     if len(player.coins) == 0:
         print("Skip turn")
+        if player.winning_order is None:
+            player.winning_order = winners + 1
+            winners += 1
+        return    
     curr_coin_pos = player.coins[player.curr_coin]
     move_count = 0
     new_row_pos = curr_coin_pos[0]
@@ -202,7 +207,6 @@ def make_move(player, dice_val):
         if_kills_then_execute(player, new_row_pos, new_col_pos)
 
 
-
 def if_kills_then_execute(player, new_row_pos, new_col_pos):
     new_pos_player = check_position((new_row_pos, new_col_pos))
     print("New position: ", new_row_pos, " ", new_col_pos)
@@ -225,7 +229,6 @@ def if_kills_then_execute(player, new_row_pos, new_col_pos):
         if is_killed:
             player.set_have_killed()
             print("Someone gets killed!")
-
 
 
 init_board()
