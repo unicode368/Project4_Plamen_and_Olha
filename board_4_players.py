@@ -89,10 +89,10 @@ def is_safe_pos(pos):
 def if_stuck_and_not_killed_then_move(player, dice_val):
     global move_count, new_row_pos, new_col_pos
     if (new_row_pos, new_col_pos) == player.stop_position:
+        print("yes")
         if move_count < dice_val and player.curr_coin != "c4":
             print("Player stuck...")
             player.set_curr_coin()
-            print(player.curr_coin)
             curr_coin_pos = player.coins[player.curr_coin]
             new_row_pos = curr_coin_pos[0]
             new_col_pos = curr_coin_pos[1]
