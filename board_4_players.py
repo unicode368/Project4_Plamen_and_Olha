@@ -77,10 +77,7 @@ def print_board():
 
 def check_game_end_condition():
     global player1, player2, player3, player4
-    return player1.winning_order is not None and \
-           player2.winning_order is not None and \
-           player3.winning_order is not None and \
-           player4.winning_order is not None
+    return winners == 4
 
 
 def is_safe_pos(pos):
@@ -145,7 +142,7 @@ def make_move(player, dice_val):
         if player.winning_order is None:
             player.winning_order = winners + 1
             winners += 1
-        return    
+        return
     curr_coin_pos = player.coins[player.curr_coin]
     move_count = 0
     new_row_pos = curr_coin_pos[0]
