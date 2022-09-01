@@ -89,7 +89,8 @@ def if_stuck_and_not_killed_then_move(player, dice_val):
     global move_count, new_row_pos, new_col_pos
     # print("move_count & dice_value are", move_count, dice_val)
     if (new_row_pos, new_col_pos) == player.stop_position:
-        if move_count < dice_val and player.curr_coin != "c4" and player.have_killed == False:
+        if move_count < dice_val and player.curr_coin != player.get_coin_biggest_val() \
+                and not player.have_killed:
             print(f"Player is stuck")
             player.set_curr_coin()
             while player.curr_coin not in player.coins.keys():
@@ -100,7 +101,8 @@ def if_stuck_and_not_killed_then_move(player, dice_val):
             new_col_pos = curr_coin_pos[1]
             move_count = 0
             return "continue"
-        elif move_count < dice_val and player.curr_coin != "c4" and player.have_killed == True:
+        elif move_count < dice_val and player.curr_coin != player.get_coin_biggest_val()\
+                and player.have_killed:
             # print("Inner loop if statement is here")
             (new_row_pos, new_col_pos) = inner_start_pos[player]
             move_count += 1
@@ -109,7 +111,7 @@ def if_stuck_and_not_killed_then_move(player, dice_val):
         #     print("Stop spot")
         #     return None
         elif (new_row_pos, new_col_pos) == player.stop_position and \
-                move_count != dice_val and player.curr_coin == "c4":
+                move_count != dice_val and player.curr_coin == player.get_coin_biggest_val():
             return "exit"
     else:
         if dice_val - move_count == 1 and (new_row_pos, new_col_pos) == player.before_win_spot:
@@ -128,7 +130,8 @@ def if_stuck_and_not_killed_then_move(player, dice_val):
             # new_coin = player.curr_coin
             print("Player stuck in inner loop")
             player.set_curr_coin()
-            print(player.curr_coin)
+            while player.curr_coin not in player.coins.keys():
+                player.set_curr_coin()
             curr_coin_pos = player.coins[player.curr_coin]
             new_row_pos = curr_coin_pos[0]
             new_col_pos = curr_coin_pos[1]
@@ -171,6 +174,7 @@ def make_move(player, dice_val):
             # print("move_count == dice_val WORKS")
             break
         elif next_move == "exit":
+            print("Game froze...")
             return
         elif next_move == "continue":
             # switches coin or goes to inner loop

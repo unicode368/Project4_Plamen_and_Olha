@@ -45,3 +45,10 @@ class Player:
             if pos == self.coins[i]:
                 count += 1
         return count
+
+    def get_coin_biggest_val(self):
+        max = 0
+        for i in self.coins.keys():
+            if max < int(i[-1]):
+                max = int(i[-1])
+        return max
