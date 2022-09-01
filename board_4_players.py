@@ -76,7 +76,7 @@ def print_board():
 
 
 def check_game_end_condition():
-    global player1, player2, player3, player4
+    global winners
     return winners == 4
 
 
@@ -114,6 +114,7 @@ def if_stuck_and_not_killed_then_move(player, dice_val):
                 player.set_curr_coin()
                 new_coin = player.curr_coin
             return "exit"
+
         elif dice_val - move_count > 2 and (new_row_pos, new_col_pos) == player.before_win_spot:
             # player.set_curr_coin()
             # new_coin = player.curr_coin
@@ -131,8 +132,8 @@ def if_stuck_and_not_killed_then_move(player, dice_val):
         elif (new_row_pos, new_col_pos) == player.stop_position and \
                 move_count != dice_val and player.curr_coin == "c4":
             return "exit"
-        else:
-            return "go"
+    else:
+        return "go"
 
 
 def make_move(player, dice_val):
@@ -147,7 +148,9 @@ def make_move(player, dice_val):
     move_count = 0
     new_row_pos = curr_coin_pos[0]
     new_col_pos = curr_coin_pos[1]
+
     while move_count < dice_val:
+
         if player.check_boundaries() == "outer":
             boundaries = outer_boundaries
         else:
@@ -201,7 +204,7 @@ def make_move(player, dice_val):
                 new_col_pos -= 1
             move_count += 1
 
-        if_kills_then_execute(player, new_row_pos, new_col_pos)
+    if_kills_then_execute(player, new_row_pos, new_col_pos)
 
 
 def if_kills_then_execute(player, new_row_pos, new_col_pos):
