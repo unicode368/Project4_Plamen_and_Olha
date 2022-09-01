@@ -9,9 +9,9 @@ class Player:
         self.winning_order = None
         self.stop_position = (0, 0)
         self.curr_coin = ""
-        self.boundaries = [0, 0, 4, 4]
+        self.before_win_spot = (0,0)
 
-    def set_player(self, init_pos, coin_avatar, color, stop_pos):
+    def set_player(self, init_pos, coin_avatar, color, stop_pos, before_win_spot):
         self.have_killed = False
         self.init_pos = init_pos
         self.coins = {"c1": init_pos, "c2": init_pos,
@@ -21,17 +21,14 @@ class Player:
         self.winning_order = None
         self.stop_position = stop_pos
         self.curr_coin = "c1"
-        self.boundaries = [0, 0, 4, 4]
+        self.before_win_spot = before_win_spot
 
     def set_have_killed(self):
         self.have_killed = True
-        self.stop_position = None
+        #self.stop_position = None
 
     def set_curr_coin(self):
-        self.curr_coin = "c" + str(int(self.curr_coin[1]) + 1)
-
-    def set_boundaries(self, boundaries):
-        self.boundaries = boundaries
+        self.curr_coin = "c" + str((int(self.curr_coin[1]) + 1) % 4)
 
     def set_winning_order(self, order):
         self.winning_order = order
@@ -46,3 +43,11 @@ class Player:
                 count += 1
         return count
 
+    def check_boundaries(self):
+        coin_id = self.curr_coin
+        check_pos = self.coins[coin_id]
+        if check_pos[0] == 0 or check_pos[0] == 4 or \
+            check_pos[1] == 0 or check_pos[1] == 4:
+            return "outer"
+        else:
+            return "inner"

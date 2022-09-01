@@ -1,7 +1,6 @@
 from player import Player
 from graphics import Graphics
 import random
-
 board = []
 player1 = Player()
 player2 = Player()
@@ -14,7 +13,7 @@ inner_boundaries = [1, 1, 3, 3]
 new_row_pos = 0
 new_col_pos = 0
 move_count = 0
-
+inner_start_pos = {player1: (3, 1), player2: (3, 3), player3: (1, 3), player4: (1, 1)}
 
 def init_board():
     global board
@@ -28,10 +27,11 @@ def init_board():
 def init_players():
     global player1, player2, player3, player4
     # ( init_pos , symbol , color , stop_position)
-    player1.set_player((4, 2), Graphics.SUITS[0], Graphics.COLORS[0], (4, 1))
-    player2.set_player((2, 4), Graphics.SUITS[1], Graphics.COLORS[1], (3, 4))
-    player3.set_player((0, 2), Graphics.SUITS[2], Graphics.COLORS[2], (0, 3))
-    player4.set_player((2, 0), Graphics.SUITS[3], Graphics.COLORS[3], (1, 0))
+    player1.set_player((4, 2), Graphics.SUITS[0], Graphics.COLORS[0], (4, 1), (3, 2))
+    player2.set_player((2, 4), Graphics.SUITS[1], Graphics.COLORS[1], (3, 4), (2, 3))
+    player3.set_player((0, 2), Graphics.SUITS[2], Graphics.COLORS[2], (0, 3), (1, 2))
+    player4.set_player((2, 0), Graphics.SUITS[3], Graphics.COLORS[3], (1, 0), (2, 1))
+
 
 
 def check_position(pos):  # returns a list of players at the input pos
@@ -67,10 +67,10 @@ def print_board():
                     # one_pos_print += player4.color + player4.coin_avatar + str(k[1])
                     print(player4.color + player4.coin_avatar, k[1], end="")
             if not curr_pos:
-                print("\033[90m", "\033[1m", Graphics.EMPTY_POS, end="\t"*2)
+                print("\033[90m", "\033[1m", Graphics.EMPTY_POS, end="\t" * 2)
             else:
-                print(one_pos_print, end="\t"*2)
-        print("\n"*2)
+                print(one_pos_print, end="\t" * 2)
+        print("\n" * 2)
 
 
 def check_game_end_condition():
@@ -86,12 +86,13 @@ def is_safe_pos(pos):
         return True
 
 
+
 def if_stuck_and_not_killed_then_move(player, dice_val):
     global move_count, new_row_pos, new_col_pos
-    print("move_count & dice_value are", move_count, dice_val)
+    # print("move_count & dice_value are", move_count, dice_val)
     if (new_row_pos, new_col_pos) == player.stop_position:
-        if move_count < dice_val and player.curr_coin != "c4":
-            print("Player stuck...")
+        if move_count < dice_val and player.curr_coin != "c4" and player.have_killed == False:
+            print(f"Player is stuck")
             player.set_curr_coin()
             print(player.curr_coin)
             curr_coin_pos = player.coins[player.curr_coin]
@@ -99,39 +100,67 @@ def if_stuck_and_not_killed_then_move(player, dice_val):
             new_col_pos = curr_coin_pos[1]
             move_count = 0
             return "continue"
-        elif move_count == dice_val:
-            print("Stop spot")
-            return None
-        elif (new_row_pos, new_col_pos) == player.stop_position and \
-                move_count != dice_val and player.curr_coin == "c4":
+        elif move_count < dice_val and player.curr_coin != "c4" and player.have_killed == True:
+            # print("Inner loop if statement is here")
+            (new_row_pos, new_col_pos) = inner_start_pos[player]
+            move_count += 1
+            return "continue"
+
+        if dice_val - move_count == 2 and (new_row_pos, new_col_pos) == player.before_win_spot:
+            print("Inside before_win_spot")
+            # (new_row_pos, new_col_pos) = (2,2)
+            del player.coins[player.curr_coin]
+            player.set_curr_coin()
+            new_coin = player.curr_coin
+            while new_coin in player.coins.keys():
+                player.set_curr_coin()
+                new_coin = player.curr_coin
             return "exit"
-    else:
-        return "go"
+        elif dice_val - move_count > 2 and (new_row_pos, new_col_pos) == player.before_win_spot:
+            # player.set_curr_coin()
+            # new_coin = player.curr_coin
+            print("Player stuck in inner loop")
+            player.set_curr_coin()
+            print(player.curr_coin)
+            curr_coin_pos = player.coins[player.curr_coin]
+            new_row_pos = curr_coin_pos[0]
+            new_col_pos = curr_coin_pos[1]
+            move_count = 0
+            return "continue"
+        # elif move_count == dice_val:
+        #     print("Stop spot")
+        #     return None
+        elif (new_row_pos, new_col_pos) == player.stop_position and \
+             move_count != dice_val and player.curr_coin == "c4":
+            return "exit"
+        else:
+            return "go"
 
 
 def make_move(player, dice_val):
     global move_count, new_row_pos, new_col_pos
+    if len(player.coins) == 0:
+        print("Skip turn")
     curr_coin_pos = player.coins[player.curr_coin]
     move_count = 0
     new_row_pos = curr_coin_pos[0]
     new_col_pos = curr_coin_pos[1]
-
-    if player.check_boundaries() == "outer":
-        boundaries = outer_boundaries
-    else:
-        boundaries = inner_boundaries
-
     while move_count < dice_val:
+        if player.check_boundaries() == "outer":
+            boundaries = outer_boundaries
+        else:
+            boundaries = inner_boundaries
+
         next_move = if_stuck_and_not_killed_then_move(player, dice_val)
-        print("Next move", next_move)
+        # print("Next move", next_move)
         if next_move is None:
-            print("move_count == dice_val WORKS")
+            # print("move_count == dice_val WORKS")
             break
         elif next_move == "exit":
             return
         elif next_move == "continue":
             continue
-        elif next_move == "go":
+        elif next_move == "go" and boundaries == outer_boundaries:
             if new_col_pos == boundaries[0] \
                     and new_row_pos != boundaries[2]:
                 new_row_pos += 1
@@ -145,7 +174,33 @@ def make_move(player, dice_val):
                     new_col_pos != boundaries[1]:
                 new_col_pos -= 1
             move_count += 1
-    if_kills_then_execute(player, new_row_pos, new_col_pos)
+
+
+        elif next_move == "go" and boundaries == inner_boundaries:
+            # print("Inner loop rules !!!")
+            # down
+            if new_col_pos == boundaries[2] \
+                    and new_row_pos != boundaries[2]:
+                new_row_pos += 1
+
+            # right
+            elif new_row_pos == boundaries[0] and \
+                    new_col_pos != boundaries[3]:
+                new_col_pos += 1
+
+            # up
+            elif new_col_pos == boundaries[0] and \
+                    new_row_pos != boundaries[0]:
+                new_row_pos -= 1
+
+            # left
+            elif new_row_pos == boundaries[3] and \
+                    new_col_pos != boundaries[0]:
+                new_col_pos -= 1
+            move_count += 1
+
+        if_kills_then_execute(player, new_row_pos, new_col_pos)
+
 
 
 def if_kills_then_execute(player, new_row_pos, new_col_pos):
@@ -170,6 +225,7 @@ def if_kills_then_execute(player, new_row_pos, new_col_pos):
         if is_killed:
             player.set_have_killed()
             print("Someone gets killed!")
+
 
 
 init_board()
