@@ -42,12 +42,3 @@ class Player:
             if pos == self.coins[i]:
                 count += 1
         return count
-
-    def check_boundaries(self):
-        coin_id = self.curr_coin
-        check_pos = self.coins[coin_id]
-        if check_pos[0] == 0 or check_pos[0] == 4 or \
-            check_pos[1] == 0 or check_pos[1] == 4:
-            return "outer"
-        else:
-            return "inner"

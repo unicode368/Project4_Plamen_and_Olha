@@ -92,6 +92,8 @@ def if_stuck_and_not_killed_then_move(player, dice_val):
         if move_count < dice_val and player.curr_coin != "c4" and player.have_killed == False:
             print(f"Player is stuck")
             player.set_curr_coin()
+            while player.curr_coin not in player.coins.keys():
+                player.set_curr_coin()
             print(player.curr_coin)
             curr_coin_pos = player.coins[player.curr_coin]
             new_row_pos = curr_coin_pos[0]
@@ -104,18 +106,18 @@ def if_stuck_and_not_killed_then_move(player, dice_val):
             move_count += 1
             return "continue"
 
-        if dice_val - move_count == 2 and (new_row_pos, new_col_pos) == player.before_win_spot:
+        if dice_val - move_count == 1 and (new_row_pos, new_col_pos) == player.before_win_spot:
             print("Inside before_win_spot")
             # (new_row_pos, new_col_pos) = (2,2)
             del player.coins[player.curr_coin]
             player.set_curr_coin()
             new_coin = player.curr_coin
-            while new_coin in player.coins.keys():
+            while new_coin not in player.coins.keys():
                 player.set_curr_coin()
                 new_coin = player.curr_coin
             return "exit"
 
-        elif dice_val - move_count > 2 and (new_row_pos, new_col_pos) == player.before_win_spot:
+        elif dice_val - move_count > 1 and (new_row_pos, new_col_pos) == player.before_win_spot:
             # player.set_curr_coin()
             # new_coin = player.curr_coin
             print("Player stuck in inner loop")
@@ -136,6 +138,14 @@ def if_stuck_and_not_killed_then_move(player, dice_val):
         return "go"
 
 
+def check_pos(pos):
+    if pos[0] == 0 or pos[0] == 4 or \
+            pos[1] == 0 or pos[1] == 4:
+        return "outer"
+    else:
+        return "inner"
+
+
 def make_move(player, dice_val):
     global move_count, new_row_pos, new_col_pos, winners
     if len(player.coins) == 0:
@@ -151,12 +161,12 @@ def make_move(player, dice_val):
 
     while move_count < dice_val:
 
-        if player.check_boundaries() == "outer":
+        next_move = if_stuck_and_not_killed_then_move(player, dice_val)
+
+        if check_pos((new_row_pos, new_col_pos)) == "outer":
             boundaries = outer_boundaries
         else:
             boundaries = inner_boundaries
-
-        next_move = if_stuck_and_not_killed_then_move(player, dice_val)
         # print("Next move", next_move)
         if next_move is None:
             # print("move_count == dice_val WORKS")
@@ -164,6 +174,7 @@ def make_move(player, dice_val):
         elif next_move == "exit":
             return
         elif next_move == "continue":
+            # switches coin or goes to inner loop
             continue
         elif next_move == "go" and boundaries == outer_boundaries:
             if new_col_pos == boundaries[0] \
@@ -179,8 +190,6 @@ def make_move(player, dice_val):
                     new_col_pos != boundaries[1]:
                 new_col_pos -= 1
             move_count += 1
-
-
         elif next_move == "go" and boundaries == inner_boundaries:
             # print("Inner loop rules !!!")
             # down
@@ -203,7 +212,6 @@ def make_move(player, dice_val):
                     new_col_pos != boundaries[0]:
                 new_col_pos -= 1
             move_count += 1
-
     if_kills_then_execute(player, new_row_pos, new_col_pos)
 
 
