@@ -105,7 +105,13 @@ def if_stuck_and_not_killed_then_move(player, dice_val):
             (new_row_pos, new_col_pos) = inner_start_pos[player]
             move_count += 1
             return "continue"
-
+        # elif move_count == dice_val:
+        #     print("Stop spot")
+        #     return None
+        elif (new_row_pos, new_col_pos) == player.stop_position and \
+                move_count != dice_val and player.curr_coin == "c4":
+            return "exit"
+    else:
         if dice_val - move_count == 1 and (new_row_pos, new_col_pos) == player.before_win_spot:
             print("Inside before_win_spot")
             # (new_row_pos, new_col_pos) = (2,2)
@@ -128,13 +134,6 @@ def if_stuck_and_not_killed_then_move(player, dice_val):
             new_col_pos = curr_coin_pos[1]
             move_count = 0
             return "continue"
-        # elif move_count == dice_val:
-        #     print("Stop spot")
-        #     return None
-        elif (new_row_pos, new_col_pos) == player.stop_position and \
-                move_count != dice_val and player.curr_coin == "c4":
-            return "exit"
-    else:
         return "go"
 
 

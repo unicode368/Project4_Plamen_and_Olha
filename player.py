@@ -28,7 +28,10 @@ class Player:
         #self.stop_position = None
 
     def set_curr_coin(self):
-        self.curr_coin = "c" + str((int(self.curr_coin[1]) + 1) % 4)
+        if (int(self.curr_coin[1]) + 1) % 4 == 0:
+            self.curr_coin = "c4"
+        else:
+            self.curr_coin = "c" + str((int(self.curr_coin[1]) + 1) % 4)
 
     def set_winning_order(self, order):
         self.winning_order = order
