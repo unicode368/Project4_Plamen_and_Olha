@@ -28,7 +28,9 @@ class Player:
         #self.stop_position = None
 
     def set_curr_coin(self):
-        if (int(self.curr_coin[1]) + 1) % 4 == 0:
+        if len(self.coins) == 0:
+            self.curr_coin = None
+        elif (int(self.curr_coin[1]) + 1) % 4 == 0:
             self.curr_coin = "c4"
         else:
             self.curr_coin = "c" + str((int(self.curr_coin[1]) + 1) % 4)
@@ -51,4 +53,4 @@ class Player:
         for i in self.coins.keys():
             if max < int(i[-1]):
                 max = int(i[-1])
-        return max
+        return "c" + str(max)

@@ -16,6 +16,7 @@ new_col_pos = 0
 move_count = 0
 inner_start_pos = {player1: (3, 1), player2: (3, 3), player3: (1, 3), player4: (1, 1)}
 winners = 0
+switch_counter = 1
 
 
 def init_board():
@@ -86,12 +87,12 @@ def is_safe_pos(pos):
 
 
 def if_stuck_and_not_killed_then_move(player, dice_val):
-    global move_count, new_row_pos, new_col_pos
+    global move_count, new_row_pos, new_col_pos, switch_counter
     # print("move_count & dice_value are", move_count, dice_val)
     if (new_row_pos, new_col_pos) == player.stop_position:
-        if move_count < dice_val and player.curr_coin != player.get_coin_biggest_val() \
+        if move_count < dice_val and switch_counter <= len(player.coins) \
                 and not player.have_killed:
-            print(f"Player is stuck")
+            # print(f"Player is stuck")
             player.set_curr_coin()
             while player.curr_coin not in player.coins.keys():
                 player.set_curr_coin()
@@ -100,8 +101,9 @@ def if_stuck_and_not_killed_then_move(player, dice_val):
             new_row_pos = curr_coin_pos[0]
             new_col_pos = curr_coin_pos[1]
             move_count = 0
+            switch_counter += 1
             return "continue"
-        elif move_count < dice_val and player.curr_coin != player.get_coin_biggest_val()\
+        elif move_count < dice_val and switch_counter <= len(player.coins) \
                 and player.have_killed:
             # print("Inner loop if statement is here")
             (new_row_pos, new_col_pos) = inner_start_pos[player]
@@ -111,16 +113,17 @@ def if_stuck_and_not_killed_then_move(player, dice_val):
         #     print("Stop spot")
         #     return None
         elif (new_row_pos, new_col_pos) == player.stop_position and \
-                move_count != dice_val and player.curr_coin == player.get_coin_biggest_val():
+                move_count != dice_val and switch_counter > len(player.coins):
+            print("Player stuck")
             return "exit"
     else:
         if dice_val - move_count == 1 and (new_row_pos, new_col_pos) == player.before_win_spot:
-            print("Inside before_win_spot")
+            # print("Inside before_win_spot")
             # (new_row_pos, new_col_pos) = (2,2)
             del player.coins[player.curr_coin]
             player.set_curr_coin()
             new_coin = player.curr_coin
-            while new_coin not in player.coins.keys():
+            while new_coin not in player.coins.keys() and len(player.coins) > 0:
                 player.set_curr_coin()
                 new_coin = player.curr_coin
             return "exit"
@@ -128,7 +131,11 @@ def if_stuck_and_not_killed_then_move(player, dice_val):
         elif dice_val - move_count > 1 and (new_row_pos, new_col_pos) == player.before_win_spot:
             # player.set_curr_coin()
             # new_coin = player.curr_coin
-            print("Player stuck in inner loop")
+            # print("Player stuck in inner loop")
+            if switch_counter > len(player.coins):
+                print("Player stuck")
+                # print("Curr coin: ", player.curr_coin, "Player stop pos: ", inner_start_pos[player])
+                return "exit"
             player.set_curr_coin()
             while player.curr_coin not in player.coins.keys():
                 player.set_curr_coin()
@@ -136,6 +143,7 @@ def if_stuck_and_not_killed_then_move(player, dice_val):
             new_row_pos = curr_coin_pos[0]
             new_col_pos = curr_coin_pos[1]
             move_count = 0
+            switch_counter += 1
             return "continue"
         return "go"
 
@@ -149,9 +157,9 @@ def check_pos(pos):
 
 
 def make_move(player, dice_val):
-    global move_count, new_row_pos, new_col_pos, winners
+    global move_count, new_row_pos, new_col_pos, winners, switch_counter
     if len(player.coins) == 0:
-        print("Skip turn")
+        # print("Skip turn")
         if player.winning_order is None:
             player.winning_order = winners + 1
             winners += 1
@@ -160,6 +168,7 @@ def make_move(player, dice_val):
     move_count = 0
     new_row_pos = curr_coin_pos[0]
     new_col_pos = curr_coin_pos[1]
+    switch_counter = 1
 
     while move_count < dice_val:
 
@@ -174,7 +183,6 @@ def make_move(player, dice_val):
             # print("move_count == dice_val WORKS")
             break
         elif next_move == "exit":
-            print("Game froze...")
             return
         elif next_move == "continue":
             # switches coin or goes to inner loop
@@ -220,9 +228,9 @@ def make_move(player, dice_val):
 
 def if_kills_then_execute(player, new_row_pos, new_col_pos):
     new_pos_player = check_position((new_row_pos, new_col_pos))
-    print("New position: ", new_row_pos, " ", new_col_pos)
+    # print("New position: ", new_row_pos, " ", new_col_pos)
     if is_safe_pos((new_row_pos, new_col_pos)):
-        print("safe spot!")
+        # print("safe spot!")
         # if safe, set_coins updates curr_coin pos
         player.set_coins(player.curr_coin, (new_row_pos, new_col_pos))
     else:
@@ -230,7 +238,7 @@ def if_kills_then_execute(player, new_row_pos, new_col_pos):
         player.set_coins(player.curr_coin, (new_row_pos, new_col_pos))
         is_killed = False
         for player_in_the_spot in new_pos_player:
-            print(player_in_the_spot)
+            # print(player_in_the_spot)
             if int(player_in_the_spot[0][-1]) != turn:
                 killed_player = turns_and_players[int(player_in_the_spot[0][-1])]
                 for i in killed_player.coins.keys():
@@ -239,7 +247,7 @@ def if_kills_then_execute(player, new_row_pos, new_col_pos):
                         killed_player.coins[i] = killed_player.init_pos
         if is_killed:
             player.set_have_killed()
-            print("Someone gets killed!")
+            # print("Someone gets killed!")
 
 
 init_board()
@@ -248,24 +256,38 @@ print("The game begins!")
 turn = 1
 
 while not check_game_end_condition():
-    print()
-    print_board()
-    print()
-    dice = random.randint(1, 4)
     if turn == 1:
-        print(f"Player{turn} {player1.coin_avatar} will advance next by {dice} moves.")
-        make_move(player1, dice)
+        player = player1
     elif turn == 2:
-        print(f"Player{turn} {player2.coin_avatar} will advance next by {dice} moves.")
-        make_move(player2, dice)
+        player = player2
+        # print(f"Player{turn} {player2.coin_avatar} will advance next by {dice} moves.")
+        # make_move(player2, dice)
     elif turn == 3:
-        print(f"Player{turn} {player3.coin_avatar} will advance next by {dice} moves.")
-        make_move(player3, dice)
+        player = player3
+        # print(f"Player{turn} {player3.coin_avatar} will advance next by {dice} moves.")
+        # make_move(player3, dice)
     else:
-        print(f"Player{turn} {player4.coin_avatar} will advance next by {dice} moves.")
-        make_move(player4, dice)
+        player = player4
+        # print(f"Player{turn} {player4.coin_avatar} will advance next by {dice} moves.")
+        # make_move(player4, dice)
+    if player.winning_order is None:
+        dice = random.randint(1, 4)
+        if len(player.coins) > 0:
+            print()
+            print_board()
+            print()
+            print(f"Player{turn} {player.coin_avatar} will advance next by {dice} moves.")
+        make_move(player, dice)
     if turn == 4:
         turn = 1
     else:
         turn += 1
-    cont = input("Continue...")
+    #count += 1
+    #print(count)
+    #cont = input("Continue...")
+
+print("Results:")
+print("Player 1 - pos ", str(player1.winning_order))
+print("Player 2 - pos ", str(player2.winning_order))
+print("Player 3 - pos ", str(player3.winning_order))
+print("Player 4 - pos ", str(player4.winning_order))
